@@ -1,0 +1,91 @@
+# Docker Compose for running Apache Airflow locally
+#
+# Usage:
+#   docker compose -f docker-compose.airflow.yml up airflow-init
+#   docker compose -f docker-compose.airflow.yml up -d
+#
+# Airflow UI: http://localhost:8080  (login: airflow / password: airflow)
+#
+# Stop:
+#   docker compose -f docker-compose.airflow.yml down
+
+x-airflow-common: &airflow-common
+  image: apache/airflow:2.9.3-python3.11
+  environment:
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    # Install pipeline dependencies on startup (built-in Airflow image feature)
+    _PIP_ADDITIONAL_REQUIREMENTS: >-
+      requests>=2.32
+      tenacity>=8.5
+      pydantic>=2.7
+      google-cloud-bigquery>=3.25
+      python-dotenv>=1.0
+    # Add src/ to PYTHONPATH — Python will find the pipeline module
+    PYTHONPATH: /opt/airflow/project/src
+    # Pipeline variables (loaded from .env if present)
+    GCP_PROJECT_ID: ${GCP_PROJECT_ID:-}
+    BQ_DATASET: ${BQ_DATASET:-macro_data}
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./src:/opt/airflow/project/src
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  # Database for Airflow (metadata, logs, task statuses)
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+
+  # Initialization — run once before webserver and scheduler
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+          --username airflow \
+          --password airflow \
+          --firstname Admin \
+          --lastname User \
+          --role Admin \
+          --email admin@example.com
+        echo "Airflow initialized successfully"
+    restart: "no"
+
+  # Webserver — graphical UI (http://localhost:8080)
+  airflow-webserver:
+    <<: *airflow-common
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      retries: 5
+
+  # Scheduler — triggers tasks according to the DAG schedule
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    restart: always

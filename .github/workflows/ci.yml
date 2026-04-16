@@ -1,0 +1,54 @@
+# =============================================================================
+# CI — Continuous Integration
+#
+# Uruchamia się przy każdym push i pull request do main.
+# Sprawdza: linting (ruff) + testy (pytest)
+#
+# Dzięki temu wiemy od razu czy nowy kod nie psuje istniejącej logiki.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    name: Lint & Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout kodu
+        uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Instalacja zależności (z dev extras)
+        run: pip install -e ".[dev]"
+
+      - name: Linting — ruff (sprawdza styl kodu)
+        run: ruff check src/ tests/
+
+      - name: Format check — ruff format
+        run: ruff format --check src/ tests/
+
+      - name: Testy jednostkowe — pytest
+        run: python -m pytest tests/ --cov=pipeline --cov-report=term-missing
+
+      - name: Upload coverage report (opcjonalne)
+        if: matrix.python-version == '3.11'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .coverage

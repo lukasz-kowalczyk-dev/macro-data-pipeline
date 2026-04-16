@@ -1,0 +1,63 @@
+{
+  "meta": {
+    "schema": "https://stats.oecd.org/SDMX-JSON/schema/message/data",
+    "id": "test-fixture",
+    "prepared": "2024-01-01T00:00:00Z"
+  },
+  "data": {
+    "dataSets": [
+      {
+        "series": {
+          "0:0:0:0": {
+            "observations": {
+              "0": [592340.5, 0],
+              "1": [605120.8, 0],
+              "2": [598760.3, 0]
+            }
+          },
+          "1:0:0:0": {
+            "observations": {
+              "0": [3456789.0, 0],
+              "1": [3512340.0, 0],
+              "2": [3489200.0, 0]
+            }
+          }
+        }
+      }
+    ],
+    "structures": [
+      {
+        "dimensions": {
+          "series": [
+            {
+              "id": "REF_AREA",
+              "values": [{"id": "POL"}, {"id": "USA"}]
+            },
+            {
+              "id": "TRANSACTION",
+              "values": [{"id": "B1GQ"}]
+            },
+            {
+              "id": "TRANSFORMATION",
+              "values": [{"id": "VPVOBARSA"}]
+            },
+            {
+              "id": "FREQ",
+              "values": [{"id": "Q"}]
+            }
+          ],
+          "observation": [
+            {
+              "id": "TIME_PERIOD",
+              "values": [
+                {"id": "2020-Q1"},
+                {"id": "2020-Q2"},
+                {"id": "2020-Q3"}
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

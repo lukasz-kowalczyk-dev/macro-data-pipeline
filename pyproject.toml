@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "macro-data-pipeline"
+version = "0.1.0"
+description = "Automated ETL pipeline for OECD & IMF macroeconomic data → BigQuery"
+requires-python = ">=3.11"
+dependencies = [
+    # HTTP requests z retry logic
+    "requests>=2.32",
+    "tenacity>=8.5",
+    # Walidacja i modelowanie danych
+    "pydantic>=2.7",
+    # Google BigQuery client
+    "google-cloud-bigquery>=3.25",
+    # HTTP server dla Cloud Run
+    "flask>=3.0",
+    # Zmienne środowiskowe z pliku .env (lokalne dev)
+    "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2",
+    "pytest-cov>=5.0",
+    "ruff>=0.4",        # linter + formatter
+]
+airflow = [
+    "apache-airflow>=2.9",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]   # pycodestyle errors, pyflakes, isort
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"

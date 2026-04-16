@@ -1,0 +1,23 @@
+# Sekrety i konfiguracja lokalna
+.env
+# Ignoruj tylko pliki JSON z kluczami GCP (nie fixture testowe)
+*service-account*.json
+*-key.json
+*-credentials.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# IDE
+.vscode/
+.idea/
