@@ -7,6 +7,7 @@ Fetches macroeconomic data from IMF and OECD APIs and loads it into Google BigQu
 - **OECD** — quarterly: GDP growth year-on-year
 
 **Countries:** USA, Germany, UK, France, Japan, China, Poland, Switzerland, Sweden, Norway
+<img width="1603" height="525" alt="1" src="https://github.com/user-attachments/assets/827a5dac-0434-46e8-839d-79f9533b08e8" />
 
 ## Commands
 
